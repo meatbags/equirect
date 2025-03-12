@@ -2,28 +2,27 @@
 
 Equirectangular camera extension for THREE.js
 
+![screenshot](./example/screenshots/screenshot.png)
+
+Installation:
+```
+npm install @meatbags/equirect
+```
+
 Example usage:
 ```javascript
 let scene = new THREE.Scene();
 let renderer = new THREE.WebGLRenderer();
 let equirectCamera = new EquirectangularCamera(1024);
-scene.add(equirect.mesh);
 
-// add objects
-let group = new THREE.Group();
+// add objects to scene
 ...
-scene.add(group);
 
 // update equirect camera
-equirectCamera.position.set(1, 2, 3);
+equirectCamera.position.set(10, 2, 0);
 equirectCamera.lookAt(0, 0, 0);
-equirect.mesh.visible = false;
 equirectCamera.update(renderer, scene);
 
-// render projection mesh
-group.visible = false;
-equirect.mesh.visible = true;
-
 // render scene
-renderer.render(scene, equirectCamera.camera);
+renderer.render(equirectCamera.scene, equirectCamera.camera);
 ```

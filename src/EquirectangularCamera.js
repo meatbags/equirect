@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import EquirectangularShaderMaterial from './EquirectangularShaderMaterial';
 
 class EquirectangularCamera extends THREE.Object3D {
-  constructor(size=256) {
+  constructor(size=512) {
     super();
 
     // orthographic camera
@@ -12,9 +12,8 @@ class EquirectangularCamera extends THREE.Object3D {
     this._camera.position.set(0, 0, 1);
     this._camera.lookAt(0, 0, 0);
 
-    // cube camera group
+    // cube camera [px, nx, py, ny, pz, nz]
     const textures = [];
-    // px, nx, py, ny, pz, nz
     const conf = [
       [[0, 1, 0], [1, 0, 0]],
       [[0, 1, 0], [-1, 0, 0]],
@@ -32,8 +31,6 @@ class EquirectangularCamera extends THREE.Object3D {
       camera.updateMatrixWorld();
       camera.userData.renderTarget = new THREE.WebGLRenderTarget(size, size, {
         format: THREE.RGBFormat,
-        wrapS: THREE.RepeatWrapping,
-        wrapT: THREE.RepeatWrapping,
       });
       textures.push(camera.userData.renderTarget.texture);
       this.add(camera);
@@ -44,16 +41,10 @@ class EquirectangularCamera extends THREE.Object3D {
       new THREE.PlaneGeometry(2, 1),
       new EquirectangularShaderMaterial(textures)
     );
-  }
 
-  /** get mesh */
-  get mesh() {
-    return this._mesh;
-  }
-
-  /** get camera */
-  get camera() {
-    return this._camera;
+    // output scene
+    this._scene = new THREE.Scene();
+    this._scene.add(this._mesh);
   }
 
   /** render cube-map textures */
@@ -64,6 +55,18 @@ class EquirectangularCamera extends THREE.Object3D {
       renderer.render(scene, camera);
     });
     renderer.setRenderTarget(null);
+  }
+
+  get camera() {
+    return this._camera;
+  }
+
+  get mesh() {
+    return this._mesh;
+  }
+
+  get scene() {
+    return this._scene;
   }
 }
 

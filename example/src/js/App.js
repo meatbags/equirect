@@ -1,7 +1,7 @@
 /** App */
 
 import * as THREE from 'three';
-import EquirectangularCamera from './modules/EquirectangularCamera';
+import EquirectangularCamera from '../../../src/EquirectangularCamera';
 import { Element } from '@meatbags/element';
 
 class App {
@@ -9,12 +9,13 @@ class App {
     // renderer
     const width = window.innerWidth;
     const height = window.innerHeight;
-    this.renderer = new THREE.WebGLRenderer({
-      antialias: true,
-    });
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.setSize(width, height);
     document.querySelector('#app-target').appendChild(this.renderer.domElement);
 
+    // take screenshot
     const button = Element({
       type: 'button',
       style: {
@@ -39,36 +40,41 @@ class App {
 
     // scene
     this.scene = new THREE.Scene();
-
-    // offscreen scene
-    this.scene2 = new THREE.Scene();
-    this.scene2.add(new THREE.Mesh(
-      new THREE.BoxGeometry(55, 55, 55),
+    const box = new THREE.Mesh(
+      new THREE.BoxGeometry(50, 50, 50),
       new THREE.MeshStandardMaterial({
+        color: 0xffffff,
         side: THREE.BackSide,
-      }))
+      })
     );
+    box.receiveShadow = true;
+    this.scene.add(box);
     this.cubes = [];
-    for (let i=0; i<1000; i++) {
-      const geo = new THREE.BoxGeometry(1, 2, 1);
+    for (let i=0; i<200; i++) {
+      const geo = new THREE.BoxGeometry(1, 10, 1);
       const mat = new THREE.MeshPhysicalMaterial();
       const cube = new THREE.Mesh(geo, mat);
+      cube.castShadow = true;
+      cube.receiveShadow = true;
       while (Math.abs(cube.position.x) < 1) {
-        cube.position.x = (Math.random() * 2 - 1) * 25;
-        cube.position.y = (Math.random() * 2 - 1) * 25;
-        cube.position.z = (Math.random() * 2 - 1) * 25;
+        cube.position.x = (Math.random() * 2 - 1) * 30;
+        cube.position.y = (Math.random() * 2 - 1) * 30;
+        cube.position.z = (Math.random() * 2 - 1) * 30;
       }
       mat.color.setRGB((cube.position.y + 10 / 20), 1, (-cube.position.y + 10 / 20));
-      this.scene2.add(cube);
+      this.scene.add(cube);
       this.cubes.push(cube);
     }
 
+    // equirectangular camera
+    this.equirectCamera = new EquirectangularCamera(1024);
+
     // set camera target
-    this.equirectCamera = new EquirectangularCamera(2048);
     this.cameraTarget = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({color: 0xffffff}))
-    this.cameraTarget.add(new THREE.PointLight(0xffffff, 100, 50, 2));
-    this.scene2.add(this.cameraTarget);
-    this.scene.add(this.equirectCamera.mesh);
+    const light = new THREE.PointLight(0xffffff, 200, 100, 2);
+    light.castShadow = true;
+    this.cameraTarget.add(light);
+    this.scene.add(this.cameraTarget);
 
     // loop
     this.time = {
@@ -80,9 +86,8 @@ class App {
 
   /** download image */
   downloadImage() {
-    // const renderer = this.renderer.clone();
-    this.renderer.setSize(4096, 2048);
-    this.renderer.render(this.scene, this.equirectCamera.camera);
+    this.renderer.setSize(2048, 1024);
+    this.renderer.render(this.equirectCamera.scene, this.equirectCamera.camera);
     this.renderer.domElement.toBlob(blob => {
       const a = document.createElement('a');
       document.body.appendChild(a);
@@ -114,8 +119,8 @@ class App {
   /** render */
   render() {
     // render output
-    this.equirectCamera.update(this.renderer, this.scene2);
-    this.renderer.render(this.scene, this.equirectCamera.camera);
+    this.equirectCamera.update(this.renderer, this.scene);
+    this.renderer.render(this.equirectCamera.scene, this.equirectCamera.camera);
   }
 
   /** loop */

@@ -6,10 +6,10 @@ const TerserJs = require("terser-webpack-plugin");
 
 // path
 const appName = 'APP';
-const pathJS = './src/js/main.js';
-const pathSCSS = './src/scss/style.js';
-const pathJSOutput = 'dist/lib';
-const pathCSSOutput = 'dist/lib';
+const pathJS = './example/src/js/main.js';
+const pathSCSS = './example/src/scss/style.js';
+const pathJSOutput = 'example/lib';
+const pathCSSOutput = 'example/lib';
 
 module.exports = [{
   entry: {'app.min': pathJS},
