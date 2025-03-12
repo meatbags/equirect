@@ -1,0 +1,82 @@
+/** EquirectangularCamera */
+
+import * as THREE from 'three';
+import EquirectangularShaderMaterial from './EquirectangularShaderMaterial';
+
+class EquirectangularCamera extends THREE.Object3D {
+  constructor() {
+    super();
+
+    // orthographic camera
+    this._camera = new THREE.OrthographicCamera(-1, 1, 0.5, -0.5, 0, 1000);
+    this._camera.position.set(0, 0, 1);
+    this._camera.lookAt(0, 0, 0);
+
+    // cube camera group
+    this.cameraGroup = new THREE.Group();
+    const textures = [];
+    // px, nx, py, ny, pz, nz
+    const conf = [
+      [[0, 1, 0], [1, 0, 0]],
+      [[0, 1, 0], [-1, 0, 0]],
+      [[0, 0, -1], [0, 1, 0]],
+      [[0, 0, -1], [0, -1, 0]],
+      [[0, 1, 0], [0, 0, 1]],
+      [[0, 1, 0], [0, 0, -1]],
+    ];
+    conf.forEach(c => {
+      const up = c[0];
+      const n = c[1];
+      const camera = new THREE.PerspectiveCamera(-90, 1, 0.1, 10000);
+      camera.up.set(up[0], up[1], up[2]);
+      camera.lookAt(n[0], n[1], n[2]);
+      camera.updateMatrixWorld();
+      camera.userData.renderTarget = new THREE.WebGLRenderTarget(1024, 1024, {
+        format: THREE.RGBFormat,
+        wrapS: THREE.RepeatWrapping,
+        wrapT: THREE.RepeatWrapping,
+      });
+      textures.push(camera.userData.renderTarget.texture);
+      this.cameraGroup.add(camera);
+    });
+
+    // projection
+    this.material = new EquirectangularShaderMaterial(textures);
+    this._mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 1), this.material);
+  }
+
+  /** get mesh */
+  get mesh() {
+    return this._mesh;
+  }
+
+  /** get camera */
+  get camera() {
+    return this._camera;
+  }
+
+  /** @override */
+  lookAt(point) {
+    this.cameraGroup.lookAt(point);
+    this.cameraGroup.updateMatrixWorld();
+    this.cameraGroup.children.forEach(camera => {
+      camera.updateMatrixWorld();
+    });
+  }
+
+  /** render cube-map textures */
+  update(renderer, scene) {
+    this.cameraGroup.children.forEach(camera => {
+      renderer.setRenderTarget(camera.userData.renderTarget);
+      renderer.render(scene, camera);
+    });
+    renderer.setRenderTarget(null);
+  }
+
+  /** render projection */
+  render(renderer, scene) {
+    renderer.render(scene, this._camera);
+  }
+}
+
+export default EquirectangularCamera;

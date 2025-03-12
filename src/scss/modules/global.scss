@@ -1,0 +1,14 @@
+@use '../util/vars';
+
+div, * {
+  box-sizing: border-box;
+}
+
+html, body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  width: 100%;
+}
