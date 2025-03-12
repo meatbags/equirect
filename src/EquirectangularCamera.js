@@ -1,14 +1,17 @@
 /** EquirectangularCamera */
 
-import * as THREE from 'three';
+import {
+  Object3D, OrthographicCamera, PerspectiveCamera, WebGLRenderTarget, RGBFormat,
+  PlaneGeometry, Mesh, Scene
+} from 'three';
 import EquirectangularShaderMaterial from './EquirectangularShaderMaterial';
 
-class EquirectangularCamera extends THREE.Object3D {
+class EquirectangularCamera extends Object3D {
   constructor(size=512) {
     super();
 
     // orthographic camera
-    this._camera = new THREE.OrthographicCamera(-1, 1, 0.5, -0.5, 0, 1000);
+    this._camera = new OrthographicCamera(-1, 1, 0.5, -0.5, 0, 1000);
     this._camera.position.set(0, 0, 1);
     this._camera.lookAt(0, 0, 0);
 
@@ -25,25 +28,25 @@ class EquirectangularCamera extends THREE.Object3D {
     conf.forEach(c => {
       const up = c[0];
       const n = c[1];
-      const camera = new THREE.PerspectiveCamera(-90, 1, 0.1, 10000);
+      const camera = new PerspectiveCamera(-90, 1, 0.1, 10000);
       camera.up.set(up[0], up[1], up[2]);
       camera.lookAt(n[0], n[1], n[2]);
       camera.updateMatrixWorld();
-      camera.userData.renderTarget = new THREE.WebGLRenderTarget(size, size, {
-        format: THREE.RGBFormat,
+      camera.userData.renderTarget = new WebGLRenderTarget(size, size, {
+        format: RGBFormat,
       });
       textures.push(camera.userData.renderTarget.texture);
       this.add(camera);
     });
 
     // projection surface
-    this._mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(2, 1),
+    this._mesh = new Mesh(
+      new PlaneGeometry(2, 1),
       new EquirectangularShaderMaterial(textures)
     );
 
     // output scene
-    this._scene = new THREE.Scene();
+    this._scene = new Scene();
     this._scene.add(this._mesh);
   }
 
