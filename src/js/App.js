@@ -2,19 +2,39 @@
 
 import * as THREE from 'three';
 import EquirectangularCamera from './modules/EquirectangularCamera';
+import { Element } from '@meatbags/element';
 
 class App {
   constructor() {
     // renderer
     const width = window.innerWidth;
     const height = window.innerHeight;
-    this.renderer = new THREE.WebGLRenderer();
+    this.renderer = new THREE.WebGLRenderer({
+      antialias: true,
+    });
     this.renderer.setSize(width, height);
     document.querySelector('#app-target').appendChild(this.renderer.domElement);
 
+    const button = Element({
+      type: 'button',
+      style: {
+        position: 'absolute',
+        top: '10px',
+        left: '10px',
+        cursor: 'pointer',
+      },
+      addEventListener: {
+        click: () => {
+          this.downloadImage();
+        }
+      },
+      innerText: 'Download image'
+    });
+    document.querySelector('#app-target').appendChild(button);
+
     // on resize
     window.addEventListener('resize', () => {
-      this.renderer.setSize(window.innerWidth, window.innerHeight);
+      this.resize();
     });
 
     // scene
@@ -44,7 +64,7 @@ class App {
     }
 
     // set camera target
-    this.equirectCamera = new EquirectangularCamera();
+    this.equirectCamera = new EquirectangularCamera(2048);
     this.cameraTarget = new THREE.Mesh(new THREE.SphereGeometry(0.5, 12, 12), new THREE.MeshBasicMaterial({color: 0xffffff}))
     this.cameraTarget.add(new THREE.PointLight(0xffffff, 100, 50, 2));
     this.scene2.add(this.cameraTarget);
@@ -56,6 +76,28 @@ class App {
       age: 0
     };
     this.loop();
+  }
+
+  /** download image */
+  downloadImage() {
+    // const renderer = this.renderer.clone();
+    this.renderer.setSize(4096, 2048);
+    this.renderer.render(this.scene, this.equirectCamera.camera);
+    this.renderer.domElement.toBlob(blob => {
+      const a = document.createElement('a');
+      document.body.appendChild(a);
+      a.style.display = 'none';
+      const url = window.URL.createObjectURL(blob);
+      a.href = url;
+      a.download = 'equirect.png';
+      a.click();
+      this.resize();
+    });
+  }
+
+  /** resize */
+  resize() {
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
   /** update */

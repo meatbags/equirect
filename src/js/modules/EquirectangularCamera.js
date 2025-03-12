@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import EquirectangularShaderMaterial from './EquirectangularShaderMaterial';
 
 class EquirectangularCamera extends THREE.Object3D {
-  constructor() {
+  constructor(size=256) {
     super();
 
     // orthographic camera
@@ -30,7 +30,7 @@ class EquirectangularCamera extends THREE.Object3D {
       camera.up.set(up[0], up[1], up[2]);
       camera.lookAt(n[0], n[1], n[2]);
       camera.updateMatrixWorld();
-      camera.userData.renderTarget = new THREE.WebGLRenderTarget(1024, 1024, {
+      camera.userData.renderTarget = new THREE.WebGLRenderTarget(size, size, {
         format: THREE.RGBFormat,
         wrapS: THREE.RepeatWrapping,
         wrapT: THREE.RepeatWrapping,

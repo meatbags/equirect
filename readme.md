@@ -6,12 +6,13 @@ Example usage:
 ```javascript
 let scene = new THREE.Scene();
 let renderer = new THREE.WebGLRenderer();
-let equirectCamera = new EquirectangularCamera();
+let equirectCamera = new EquirectangularCamera(1024);
 scene.add(equirect.mesh);
 
 // add objects
 let group = new THREE.Group();
 ...
+scene.add(group);
 
 // update equirect camera
 equirectCamera.position.set(1, 2, 3);
