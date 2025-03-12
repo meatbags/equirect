@@ -3,7 +3,7 @@
 Equirectangular camera extension for THREE.js
 
 Example usage:
-``
+```javascript
 let scene = new THREE.Scene();
 let renderer = new THREE.WebGLRenderer();
 let equirectCamera = new EquirectangularCamera();
@@ -25,4 +25,4 @@ equirect.mesh.visible = true;
 
 // render scene
 renderer.render(scene, equirectCamera.camera);
-``
+```
