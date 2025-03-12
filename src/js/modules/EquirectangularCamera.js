@@ -13,7 +13,6 @@ class EquirectangularCamera extends THREE.Object3D {
     this._camera.lookAt(0, 0, 0);
 
     // cube camera group
-    this.cameraGroup = new THREE.Group();
     const textures = [];
     // px, nx, py, ny, pz, nz
     const conf = [
@@ -37,12 +36,14 @@ class EquirectangularCamera extends THREE.Object3D {
         wrapT: THREE.RepeatWrapping,
       });
       textures.push(camera.userData.renderTarget.texture);
-      this.cameraGroup.add(camera);
+      this.add(camera);
     });
 
-    // projection
-    this.material = new EquirectangularShaderMaterial(textures);
-    this._mesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 1), this.material);
+    // projection surface
+    this._mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(2, 1),
+      new EquirectangularShaderMaterial(textures)
+    );
   }
 
   /** get mesh */
@@ -55,27 +56,14 @@ class EquirectangularCamera extends THREE.Object3D {
     return this._camera;
   }
 
-  /** @override */
-  lookAt(point) {
-    this.cameraGroup.lookAt(point);
-    this.cameraGroup.updateMatrixWorld();
-    this.cameraGroup.children.forEach(camera => {
-      camera.updateMatrixWorld();
-    });
-  }
-
   /** render cube-map textures */
   update(renderer, scene) {
-    this.cameraGroup.children.forEach(camera => {
+    this.children.forEach(camera => {
+      camera.updateMatrixWorld();
       renderer.setRenderTarget(camera.userData.renderTarget);
       renderer.render(scene, camera);
     });
     renderer.setRenderTarget(null);
-  }
-
-  /** render projection */
-  render(renderer, scene) {
-    renderer.render(scene, this._camera);
   }
 }
 

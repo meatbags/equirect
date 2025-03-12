@@ -7,12 +7,6 @@ class EquirectangularShaderMaterial extends THREE.ShaderMaterial {
     super({
       uniforms: {
         tex: { value: textures },
-        /*px: { value: textures[0] },
-        nx: { value: textures[1] },
-        py: { value: textures[2] },
-        ny: { value: textures[3] },
-        pz: { value: textures[4] },
-        nz: { value: textures[5] },*/
       },
       vertexShader: `
         varying vec2 vUv;
